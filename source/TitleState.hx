@@ -13,14 +13,18 @@ import flixel.group.FlxGroup;
 import flixel.input.gamepad.FlxGamepad;
 import flixel.math.FlxPoint;
 import flixel.math.FlxRect;
-import flixel.system.FlxSound;
+import flixel.sound.FlxSound;
 import flixel.system.ui.FlxSoundTray;
 import flixel.text.FlxText;
 import flixel.tweens.FlxEase;
 import flixel.tweens.FlxTween;
 import flixel.util.FlxColor;
 import flixel.util.FlxTimer;
-import lime.utils.Assets;
+import io.newgrounds.NG;
+import lime.app.Application;
+import openfl.Assets;
+
+using StringTools;
 
 class TitleState extends MusicBeatState
 {
@@ -39,6 +43,8 @@ class TitleState extends MusicBeatState
 
 	override public function create():Void
 	{
+		//Polymod.init({modRoot: "mods", dirs: ['introMod']});
+
 		#if (!web)
 		TitleState.soundExt = '.ogg';
 		#end
@@ -64,7 +70,9 @@ class TitleState extends MusicBeatState
 
 		if (FlxG.save.data.weekUnlocked != null)
 		{
-			StoryMenuState.weekUnlocked = FlxG.save.data.weekUnlocked;
+			// FIX LATER!!!
+			// WEEK UNLOCK PROGRESSION!!
+			// StoryMenuState.weekUnlocked = FlxG.save.data.weekUnlocked;
 
 			if (StoryMenuState.weekUnlocked.length < 4)
 				StoryMenuState.weekUnlocked.insert(0, true);
@@ -74,10 +82,15 @@ class TitleState extends MusicBeatState
 				StoryMenuState.weekUnlocked[0] = true;
 		}
 
-		#if SKIP_TO_PLAYSTATE
-		FlxG.switchState(new StoryMenuState());
+		#if FREEPLAY
+		FlxG.switchState(new FreeplayState());
+		#elseif CHARTING
+		FlxG.switchState(new ChartingState());
 		#else
-		startIntro();
+		new FlxTimer().start(1, function(tmr:FlxTimer)
+		{
+			startIntro();
+		});
 		#end
 	}
 
@@ -95,15 +108,16 @@ class TitleState extends MusicBeatState
 			diamond.destroyOnNoUse = false;
 
 			FlxTransitionableState.defaultTransIn = new TransitionData(FADE, FlxColor.BLACK, 1, new FlxPoint(0, -1), {asset: diamond, width: 32, height: 32},
-				new FlxRect(0, 0, FlxG.width, FlxG.height));
+				new FlxRect(-200, -200, FlxG.width * 1.4, FlxG.height * 1.4));
 			FlxTransitionableState.defaultTransOut = new TransitionData(FADE, FlxColor.BLACK, 0.7, new FlxPoint(0, 1),
-				{asset: diamond, width: 32, height: 32}, new FlxRect(0, 0, FlxG.width, FlxG.height));
-
-			FlxTransitionableState.defaultTransIn.tileData = {asset: diamond, width: 32, height: 32};
-			FlxTransitionableState.defaultTransOut.tileData = {asset: diamond, width: 32, height: 32};
+				{asset: diamond, width: 32, height: 32}, new FlxRect(-200, -200, FlxG.width * 1.4, FlxG.height * 1.4));
 
 			transIn = FlxTransitionableState.defaultTransIn;
 			transOut = FlxTransitionableState.defaultTransOut;
+
+			// HAD TO MODIFY SOME BACKEND SHIT
+			// IF THIS PR IS HERE IF ITS ACCEPTED UR GOOD TO GO
+			// https://github.com/HaxeFlixel/flixel-addons/pull/348
 
 			// var music:FlxSound = new FlxSound();
 			// music.loadStream('assets/music/freakyMenu' + TitleState.soundExt);
@@ -124,7 +138,7 @@ class TitleState extends MusicBeatState
 		add(bg);
 
 		logoBl = new FlxSprite(-150, -100);
-		logoBl.frames = FlxAtlasFrames.fromSparrow(AssetPaths.logoBumpin__png, AssetPaths.logoBumpin__xml);
+		logoBl.frames = FlxAtlasFrames.fromSparrow('assets/images/logoBumpin.png', 'assets/images/logoBumpin.xml');
 		logoBl.antialiasing = true;
 		logoBl.animation.addByPrefix('bump', 'logo bumpin', 24);
 		logoBl.animation.play('bump');
@@ -133,7 +147,7 @@ class TitleState extends MusicBeatState
 		// logoBl.color = FlxColor.BLACK;
 
 		gfDance = new FlxSprite(FlxG.width * 0.4, FlxG.height * 0.07);
-		gfDance.frames = FlxAtlasFrames.fromSparrow(AssetPaths.gfDanceTitle__png, AssetPaths.gfDanceTitle__xml);
+		gfDance.frames = FlxAtlasFrames.fromSparrow('assets/images/gfDanceTitle.png', 'assets/images/gfDanceTitle.xml');
 		gfDance.animation.addByIndices('danceLeft', 'gfDance', [30, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14], "", 24, false);
 		gfDance.animation.addByIndices('danceRight', 'gfDance', [15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29], "", 24, false);
 		gfDance.antialiasing = true;
@@ -141,7 +155,7 @@ class TitleState extends MusicBeatState
 		add(logoBl);
 
 		titleText = new FlxSprite(100, FlxG.height * 0.8);
-		titleText.frames = FlxAtlasFrames.fromSparrow(AssetPaths.titleEnter__png, AssetPaths.titleEnter__xml);
+		titleText.frames = FlxAtlasFrames.fromSparrow('assets/images/titleEnter.png', 'assets/images/titleEnter.xml');
 		titleText.animation.addByPrefix('idle', "Press Enter to Begin", 24);
 		titleText.animation.addByPrefix('press', "ENTER PRESSED", 24);
 		titleText.antialiasing = true;
@@ -150,7 +164,7 @@ class TitleState extends MusicBeatState
 		// titleText.screenCenter(X);
 		add(titleText);
 
-		var logo:FlxSprite = new FlxSprite().loadGraphic(AssetPaths.logo__png);
+		var logo:FlxSprite = new FlxSprite().loadGraphic('assets/images/logo.png');
 		logo.screenCenter();
 		logo.antialiasing = true;
 		// add(logo);
@@ -172,7 +186,7 @@ class TitleState extends MusicBeatState
 
 		credTextShit.visible = false;
 
-		ngSpr = new FlxSprite(0, FlxG.height * 0.52).loadGraphic(AssetPaths.newgrounds_logo__png);
+		ngSpr = new FlxSprite(0, FlxG.height * 0.52).loadGraphic('assets/images/newgrounds_logo.png');
 		add(ngSpr);
 		ngSpr.visible = false;
 		ngSpr.setGraphicSize(Std.int(ngSpr.width * 0.8));
@@ -211,7 +225,8 @@ class TitleState extends MusicBeatState
 
 	override function update(elapsed:Float)
 	{
-		Conductor.songPosition = FlxG.sound.music.time;
+		if (FlxG.sound.music != null)
+			Conductor.songPosition = FlxG.sound.music.time;
 		// FlxG.watch.addQuick('amp', FlxG.sound.music.amplitude);
 
 		if (FlxG.keys.justPressed.F)
@@ -254,7 +269,19 @@ class TitleState extends MusicBeatState
 
 			new FlxTimer().start(2, function(tmr:FlxTimer)
 			{
-				FlxG.switchState(new MainMenuState());
+				// Check if version is outdated
+
+				var version:String = "v" + Application.current.meta.get('version');
+
+				if (version.trim() != NGio.GAME_VER_NUMS && !OutdatedSubState.leftState)
+				{
+					trace('OLD VERSION!');
+					FlxG.switchState(new OutdatedSubState());
+				}
+				else
+				{
+					FlxG.switchState(new MainMenuState());
+				}
 			});
 			// FlxG.sound.play('assets/music/titleShoot' + TitleState.soundExt, 0.7);
 		}
