@@ -685,6 +685,8 @@ class PlayState extends MusicBeatState
 		iconP2 = new HealthIcon(SONG.player2, false);
 		iconP2.y = healthBar.y - (iconP2.height / 2);
 		add(iconP2);
+		
+		//add(doof);
 
 		strumLineNotes.cameras = [camHUD];
 		notes.cameras = [camHUD];
@@ -734,12 +736,10 @@ class PlayState extends MusicBeatState
 							});
 						});
 					});
-				case 'senpai':
+				case 'senpai', 'thorns':
 					schoolIntro(doof);
 				case 'roses':
 					FlxG.sound.play('assets/sounds/ANGRY' + TitleState.soundExt);
-					schoolIntro(doof);
-				case 'thorns':
 					schoolIntro(doof);
 				default:
 					startCountdown();
